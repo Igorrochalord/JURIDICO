@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<style>
+  /*  div {
+
+    border: 2px solid #ccc;
+    margin: auto width:25%;
+    align-items: center;
+    align-self: center;
+    justify-content: center;
+    text-align: center;
+  }
+*/
+
+
+  .column-left {
+    flex: 50%;
+  }
+
+  .column-right {
+    flex: 50%;
+
+  }
+
+  .container {
+    content: "";
+    clear: both;
+    display: flex;
+  }
+
+  .exemplos {
+    flex: 100%;
+  }
+
+  .exemplo {
+    align-items: center;
+    align-self: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+
+
+  input {
+    size: 85;
+  }
+</style>
+<head>
+  <title>Checar padrões de decisões</title>
+  <script>
+
+    // Define function to make API request and populate option input
+    function textAreaAdjust(element) {
+      element.style.width = '90%';
+      element.style.height = "1px";
+      element.style.height = (25 + element.scrollHeight) + "px";
+      element.style.margin = "0 auto"
+    }
+
+    function clearScreen() {
+      const exemplos = document.getElementById("exemplos")
+      exemplos.innerHTML = ''
+      const testar = document.querySelector("#testar-button")
+      testar.disabled = true
+    }
+
+    function createNewTextbox() {
+      const container = document.getElementById("textbox-container");
+      const textbox = document.createElement("input");
+      textbox.type = 'text';
+      textbox.size = 85;
+      textbox.placeholder = 'Preencha aqui o padrão desejado...';
+      container.appendChild(textbox);
+      container.appendChild(document.createElement("br"));
+    }
+
+    function createExampleBox() {
+      const container = document.getElementById("exemplos");
+      const textarea = document.createElement("textarea");
+      textarea.type = 'text';
+      textarea.id = 'publicacao'
+      textarea.class = 'exemplo'
+      container.appendChild(document.createElement("br"));
+      container.appendChild(textarea);
+      container.appendChild(document.createElement("br"));
+      return textarea
+    }
+
+
+    function createPubBox() {
+      const container = document.getElementById("cadastrar");
+      const textbox = document.createElement("input");
+      textbox.type = 'text';
+      textbox.size = 85;
+      textbox.id = 'pub-box'
+      textbox.placeholder = 'Preencha aqui a publicação para testar o novo padrão...';
+      container.appendChild(textbox);
+      container.appendChild(document.createElement("br"));
+    }
+
+    function createButton() {
+      container = document.getElementById("cadastrar");
+      const button = document.createElement("button");
+      button.textContent = 'Cadastrar Chave';
+      button.id = 'cadastrar-chave-button'
+      container.appendChild(button);
+      return button;
+    }
+
+    function createNewKey() {
+      const container = document.getElementById("cadastrar");
+      const inputbox = document.createElement("input");
+      inputbox.type = 'text';
+      inputbox.size = 40
+      inputbox.placeholder = 'Preencha aqui o nome da nova chave...';
+      container.appendChild(document.createElement("br"));
+      container.appendChild(document.createElement("br"));
+      container.appendChild(inputbox);
+      container.appendChild(document.createElement("br"));
+      createNewTextbox()
+      createPubBox()
+      createButton()
+      const cadastrarKeyButton = document.getElementById("cadastrar-chave-button");
+      cadastrarKeyButton.addEventListener("click", () => {
+        var select = document.getElementById("mySelect");
+        let boxes = document.querySelectorAll("#textbox-container > input[type=text]")
+        const textList = [];
+        boxes.forEach(function (element) {
+          textList.push(element.value);
+        });
+        textString = textList.join("|");
+        let key = inputbox.value
+        let pub = document.getElementById("pub-box").value;
+        lastBox = boxes[boxes.length - 1];
+        const data = {
+          key: key,
+          value: textString,
+          publicacao: pub
+        };
+        const options = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        };
+        fetch('/update', options)
+          .then(response => response.json())
+          .then(data => {
+            console.log(data)
+            alert(data['msg'])
+            pubs = data['publicacoes']
+            clearScreen()
+
+            const container = document.getElementById("exemplos");
+            container.appendChild(document.createElement("br"));
+            const exemplos = document.createElement("h3");
+            exemplos.innerHTML = 'Publicações encontradas:';
+            container.appendChild(exemplos)
+
+            for (var i = 0; i < pubs.length; i++) {
+              var option = document.createElement("option");
+              box = createExampleBox()
+              box.value = pubs[i];
+              textAreaAdjust(box)
+            }
+          }
+          );
+      });
+    }
+
+    function populateOptions() {
+      const container = document.getElementById("textbox-container");
+      // Get the option input element
+      var select = document.getElementById("mySelect");
+      // Get the textbox element
+      var textbox = document.getElementById("myTextbox");
+      var testar = document.getElementById("testar-button");
+      testar.disabled = true
+
+      const inserirNovoButton = document.getElementById("novo-padrao-button");
+      inserirNovoButton.addEventListener("click", () => {
+        clearScreen()
+        createNewTextbox();
+        testar.disabled = false
+      });
+
+      const inserirKeyButton = document.getElementById("nova-chave-button");
+      inserirKeyButton.addEventListener("click", () => {
+        clearScreen()
+        container.innerHTML = "<h4>Padrões buscados:</h4>";
+        createNewKey();
+        testar.disabled = false
+      });
+
+      const testarButton = document.getElementById("testar-button");
+      testarButton.addEventListener("click", () => {
+        let boxes = document.querySelectorAll("#textbox-container > input[type=text]")
+        let key = select.options[select.selectedIndex].text
+        lastBox = boxes[boxes.length - 1];
+        const data = {
+          key: lastBox.value
+        };
+        const options = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        };
+        fetch('/teste', options)
+          .then(response => response.json())
+          .then(data => {
+            console.log(data)
+            alert('O item ' + lastBox.value + ' apresentou ' + data["ocorrencias encontradas"] + ' ocorrências')
+            pubs = data['publicacoes']
+            clearScreen()
+
+            const container = document.getElementById("exemplos");
+            container.appendChild(document.createElement("br"));
+            const exemplos = document.createElement("h3");
+            exemplos.innerHTML = 'Publicações encontradas:';
+            container.appendChild(exemplos)
+
+            for (var i = 0; i < pubs.length; i++) {
+              var option = document.createElement("option");
+              box = createExampleBox()
+              box.value = pubs[i];
+              textAreaAdjust(box)
+            }
+          }
+          );
+      });
+
+      const atualizarButton = document.getElementById("atualizar-button");
+      atualizarButton.addEventListener("click", () => {
+        clearScreen()
+        var select = document.getElementById("mySelect");
+        let boxes = document.querySelectorAll("#textbox-container > input[type=text]")
+        let key = select.options[select.selectedIndex].text
+        lastBox = boxes[boxes.length - 1];
+        const data = {
+          key: key,
+          value: lastBox.value
+        };
+        const options = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        };
+        fetch('/cadastrar_value', options)
+          .then(response => response.json())
+          .then(data => {
+            console.log(data)
+            alert('O item ' + lastBox.value + data['resultado'])
+          }
+          );
+      });
+
+      // Make a request to the API
+      fetch('/keys')
+        .then(response => response.json())
+        .then(data => {
+          // Loop through the data and create option elements for each value
+          for (var i = 0; i < data.length; i++) {
+            var option = document.createElement("option");
+            option.text = data[i];
+            option.value = i;
+            select.add(option);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+
+      // Add event listener to option input to make new API request when option is changed
+      select.addEventListener('change', function () {
+        // Get the selected option value
+        document.getElementById('cadastrar').innerHTML = ""
+        clearScreen()
+        var selectedOption = select.options[select.selectedIndex].text;
+
+        // Make a new request to the API with the selected option value
+        fetch('/get_value/' + selectedOption)
+          .then(response => response.json())
+          .then(text => {
+            console.log(text)
+            container.innerHTML = "<h4>Padrões buscados:</h4>";
+            let strings = text['value'].split('|');
+            // Loop through each string in the list
+            for (let i = 0; i < strings.length; i++) {
+              // Create a new textbox element
+              const textbox = document.createElement("input");
+
+              // Set the type of the textbox to "text"
+              textbox.type = "text";
+              textbox.size = 85;
+
+              // Set the value of the textbox to the current string in the list
+              textbox.value = strings[i];
+
+              // Add the textbox to the container
+              container.appendChild(textbox);
+
+              // Add a line break after each textbox
+              container.appendChild(document.createElement("br"));
+            }
+          })
+          .catch(error => {
+            console.error("Error fetching strings:", error);
+          });
+      });
+    }
+  </script>
+</head>
+<body onload="populateOptions()" display="grid">
+  <div class="container">
+    <div class='column-left' id="input-container">
+      <h4 for="mySelect">Selecione a chave de pesquisa:</h4>
+      <select id="mySelect"></select>
+      <br />
+      <br />
+      <button id="nova-chave-button">Inserir Nova Chave</button>
+      <button id="novo-padrao-button">Inserir Novo Padrão</button>
+      <button id="testar-button">Testar</button>
+      <button id="atualizar-button">Atualizar</button>
+      <div id="cadastrar"></div>
+    </div>
+    <div class="column-right" id="textbox-container">
+      <h4>Padrões buscados:</h4>
+
+    </div>
+  </div>
+  <div id='exemplos' class="exemplos"></div>
+</body>
+</html>
